@@ -54,7 +54,7 @@ if (-not $AzureTenantId) {
 
 if (-not $ProjectName) { # AZDO equivalent
   if ($GitHubRepositoryName) {
-    $ProjectName = $GitHubRepositoryName
+    $ProjectName = $GitHubRepositoryName.Substring(0, 17)
   }
 
   if (-not $ProjectName) { $MissingParameterValues = $true }

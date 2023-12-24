@@ -16,7 +16,7 @@ try {
 $MissingParameterValues = $false
 
 if (-not $ProjectName) {
-    $ProjectName = $(gh repo view --json name -q '.name' 2> $null)
+    $ProjectName = $(gh repo view --json name -q '.name' 2> $null).Substring(0, 17)
     if (-not $ProjectName) { $MissingParameterValues = $true }
 }
 
