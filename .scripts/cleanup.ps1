@@ -1,5 +1,7 @@
 Param(
-    [String]$ProjectName
+    [String]$ProjectName,
+    [String]$GitHubOrganisationName, # AZDO equivalent
+    [String]$GitHubRepositoryName # AZDO equivalent
 )
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -20,8 +22,25 @@ if (-not $ProjectName) {
     if (-not $ProjectName) { $MissingParameterValues = $true }
 }
 
+if (-not $GitHubOrganisationName) { # AZDO equivalent
+  $ownerJson = gh repo view --json owner 2>$null | ConvertFrom-Json
+  if ($ownerJson -and $ownerJson.owner -and $ownerJson.owner.login) {
+    $GitHubOrganisationName = $ownerJson.owner.login
+  }
+  else {
+    $MissingParameterValues = $true
+  }
+}
+
+if (-not $GitHubRepositoryName) { # AZDO equivalent
+  $GitHubRepositoryName = $(gh repo view --json name -q '.name' 2> $null)
+  if (-not $GitHubRepositoryName) { $MissingParameterValues = $true }
+}
+
 $ScriptParameters = @{
     "ProjectName" = $ProjectName
+    "GitHubOrganisationName" = $GitHubOrganisationName
+    "GitHubRepositoryName"   = $GitHubRepositoryName
 }
 
 Write-Host
@@ -73,6 +92,15 @@ $deletedKeyVaults = az keyvault list-deleted --query "[?starts_with(name, 'kv-$P
 foreach ($vaultName in $deletedKeyVaults) {
     Write-Host "🔥 Purging: $vaultName"
     az keyvault purge --name $vaultName > $null 2>&1
+}
+
+Write-Host "🔍 Searching for GitHub Environments..."
+$githubEnvironments = gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/$GitHubOrganisationName/$GitHubRepositoryName/environments
+$environmentNames = ($githubEnvironments | ConvertFrom-Json).environments | Select-Object -ExpandProperty name
+
+foreach($environmentName in $environmentNames) {
+    Write-Host "🔥 Deleting: $environmentName"
+    gh api --method DELETE -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/$GitHubOrganisationName/$GitHubRepositoryName/environments/$environmentName
 }
 
 Write-Host "✅ Done"
