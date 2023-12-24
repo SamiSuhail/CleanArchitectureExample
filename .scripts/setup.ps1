@@ -1,6 +1,6 @@
 Param(
-  [String]$GitHubOrganisationName,
-  [String]$GitHubRepositoryName,
+  [String]$GitHubOrganisationName, # AZDO equivalent
+  [String]$GitHubRepositoryName, # AZDO equivalent
   [String]$AzureLocation,
   [String]$AzureSubscriptionId,
   [String]$AzureTenantId,
@@ -14,7 +14,7 @@ $checksScript = Join-Path $scriptRoot "checks.ps1"
 $environmentsFile = Join-Path $scriptRoot "environments.json"
 
 try {
-    . $checksScript
+    . $checksScript # AZDO equivalent
 } catch {
     Write-Host $_.Exception.Message -ForegroundColor Red
     Write-Host "Setup script terminated due to the checks failure." -ForegroundColor Red
@@ -23,7 +23,7 @@ try {
 
 $MissingParameterValues = $false
 
-if (-not $GitHubOrganisationName) {
+if (-not $GitHubOrganisationName) { # AZDO equivalent
   $ownerJson = gh repo view --json owner 2>$null | ConvertFrom-Json
   if ($ownerJson -and $ownerJson.owner -and $ownerJson.owner.login) {
     $GitHubOrganisationName = $ownerJson.owner.login
@@ -33,7 +33,7 @@ if (-not $GitHubOrganisationName) {
   }
 }
 
-if (-not $GitHubRepositoryName) {
+if (-not $GitHubRepositoryName) { # AZDO equivalent
   $GitHubRepositoryName = $(gh repo view --json name -q '.name' 2> $null)
   if (-not $GitHubRepositoryName) { $MissingParameterValues = $true }
 }
@@ -52,14 +52,14 @@ if (-not $AzureTenantId) {
   if (-not $AzureTenantId) { $MissingParameterValues = $true }
 }
 
-if (-not $ProjectName) {
+if (-not $ProjectName) { # AZDO equivalent
   if ($GitHubRepositoryName) {
     $ProjectName = $GitHubRepositoryName
   }
 
   if (-not $ProjectName) { $MissingParameterValues = $true }
 }
-
+# AZDO equivalent
 $repoUrl = "https://github.com/$GitHubOrganisationName/$GitHubRepositoryName"
 
 $environments = Get-Content -Raw -Path $environmentsFile | ConvertFrom-Json
@@ -110,7 +110,7 @@ if ($confirmation -ne "y") {
 
 Write-Host
 
-function CreateWorkloadIdentity {
+function CreateWorkloadIdentity { # AZDO equivalent
   param (
     $environmentAbbr,
     $environmentName
@@ -120,7 +120,7 @@ function CreateWorkloadIdentity {
   $applicationRegistrationDetails=$(az ad app create --display-name "$ProjectName$environmentAbbr") | ConvertFrom-Json
 
   # Create federated credentials 
-  $credential = @{
+  $credential = @{ # AZDO equivalent
     name="$ProjectName$environmentName";
     issuer="https://token.actions.githubusercontent.com";
     subject="repo:${GitHubOrganisationName}/${GitHubRepositoryName}:environment:$environmentName";
@@ -129,7 +129,7 @@ function CreateWorkloadIdentity {
   
   $credential | az ad app federated-credential create --id $applicationRegistrationDetails.id --parameters "@-" | Out-Null
   
-  $credential = @{
+  $credential = @{ # AZDO equivalent
     name="$ProjectName";
     issuer="https://token.actions.githubusercontent.com";
     subject="repo:${GitHubOrganisationName}/${GitHubRepositoryName}:ref:refs/heads/main";
@@ -152,7 +152,7 @@ function CreateResourceGroup {
   az role assignment create --assignee $appId --role Contributor --scope $resourceGroupId
 }
 
-function CreateEnvironment {
+function CreateEnvironment { # AZDO equivalent
   param (
     $environmentName
   )
@@ -176,13 +176,13 @@ function GenerateRandomPassword {
   return $Password
 }
 
-function SetVariables() {    
+function SetVariables() { # AZDO equivalent
   gh variable set AZURE_TENANT_ID --body $AzureTenantId --repo $repoUrl
   gh variable set AZURE_SUBSCRIPTION_ID --body $AzureSubscriptionId --repo $repoUrl
   gh variable set PROJECT_NAME --body $ProjectName --repo $repoUrl
 }
 
-function SetEnvironmentVariablesAndSecrets {
+function SetEnvironmentVariablesAndSecrets { # AZDO equivalent
   param(
     $environmentAbbr,
     $environmentName,
@@ -195,15 +195,18 @@ function SetEnvironmentVariablesAndSecrets {
   gh secret set AZURE_SQL_ADMINISTRATOR_PASSWORD --body (GenerateRandomPassword) --env $environmentName --repo $repoUrl
 }
 
+# AZDO equivalent
 SetVariables
 
 foreach ($environment in $environments.PSObject.Properties) {
   $environmentAbbr = $environment.Name
   $environmentName = $environment.Value
   
+  # AZDO equivalent
   CreateEnvironment $environmentName
   $appId = CreateWorkloadIdentity $environmentAbbr $environmentName
   CreateResourceGroup $environmentAbbr $appId
+  # AZDO equivalent
   SetEnvironmentVariablesAndSecrets $environmentAbbr $environmentName $appId
 }
 
