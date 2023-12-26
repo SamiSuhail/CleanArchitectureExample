@@ -195,6 +195,7 @@ function SetEnvironmentVariablesAndSecrets { # AZDO equivalent
   gh secret set AZURE_SQL_ADMINISTRATOR_PASSWORD --body (GenerateRandomPassword) --env $environmentName --repo $repoUrl
 }
 
+az provider register -n 'Microsoft.Sql'
 # AZDO equivalent
 SetVariables
 
