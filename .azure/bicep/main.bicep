@@ -11,7 +11,7 @@ param environmentName string
 
 @description('A unique suffix to add to resource names that need to be globally unique.')
 @maxLength(13)
-param resourceNameSuffix string = uniqueString(resourceGroup().id)
+param resourceNameSuffix string = substring(uniqueString(resourceGroup().id), 0, 6)
 
 @description('The administrator login username for the SQL server.')
 param sqlAdministratorUsername string
@@ -72,7 +72,7 @@ var environmentConfigurationMap = {
 
 // Define the names for resources.
 var environmentAbbreviation = environmentConfigurationMap[environmentName].environmentAbbreviation
-var keyVaultName = 'kv-${projectName}-${resourceNameSuffix}-${environmentAbbreviation}'
+var keyVaultName = 'kv-${substring(projectName, 0, 10)}-${resourceNameSuffix}-${environmentAbbreviation}'
 var appServiceAppName = 'as-${projectName}-${resourceNameSuffix}-${environmentAbbreviation}'
 var appServicePlanName = 'plan-${projectName}-${environmentAbbreviation}'
 var logAnalyticsWorkspaceName = 'log-${projectName}-${environmentAbbreviation}'
