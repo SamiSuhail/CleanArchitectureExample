@@ -39,7 +39,7 @@ if (-not $GitHubRepositoryName) { # AZDO equivalent
 }
 
 if (-not $AzureLocation) {
-  $AzureLocation = "australiaeast"
+  $AzureLocation = "westeurope"
 }
 
 if (-not $AzureSubscriptionId) {
