@@ -6,6 +6,7 @@ on:
       - main
       - master
     paths-ignore:
+      - '.azure/**'
       - .gitignore
       - CODE_OF_CONDUCT.md
       - LICENSE
