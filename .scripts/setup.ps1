@@ -196,6 +196,10 @@ function SetEnvironmentVariablesAndSecrets { # AZDO equivalent
 }
 
 az provider register -n 'Microsoft.Sql'
+az provider register -n 'Microsoft.KeyVault'
+az provider register -n 'Microsoft.OperationalInsights'
+az provider register -n 'Microsoft.Web'
+az provider register -n 'Microsoft.Insights'
 # AZDO equivalent
 SetVariables
 
