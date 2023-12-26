@@ -72,7 +72,7 @@ var environmentConfigurationMap = {
 
 // Define the names for resources.
 var environmentAbbreviation = environmentConfigurationMap[environmentName].environmentAbbreviation
-var keyVaultName = 'kv-${projectName}-${environmentAbbreviation}'
+var keyVaultName = 'kv-${projectName}-${resourceNameSuffix}-${environmentAbbreviation}'
 var appServiceAppName = 'as-${projectName}-${resourceNameSuffix}-${environmentAbbreviation}'
 var appServicePlanName = 'plan-${projectName}-${environmentAbbreviation}'
 var logAnalyticsWorkspaceName = 'log-${projectName}-${environmentAbbreviation}'
