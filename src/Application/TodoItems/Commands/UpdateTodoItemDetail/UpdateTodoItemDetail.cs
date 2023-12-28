@@ -1,4 +1,5 @@
 ﻿using Example.Application.Common.Interfaces;
+using Example.Domain.Entities;
 using Example.Domain.Enums;
 
 namespace Example.Application.TodoItems.Commands.UpdateTodoItemDetail;
@@ -14,18 +15,16 @@ public record UpdateTodoItemDetailCommand : IRequest
     public string? Note { get; init; }
 }
 
-public class UpdateTodoItemDetailCommandHandler : IRequestHandler<UpdateTodoItemDetailCommand>
+public class UpdateTodoItemDetailCommandHandler(IApplicationDbContextFactory dbContextFactory)
+    : IRequestHandler<UpdateTodoItemDetailCommand>
 {
-    private readonly IApplicationDbContext _context;
-
-    public UpdateTodoItemDetailCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IApplicationDbContextFactory _dbContextFactory = dbContextFactory;
 
     public async Task Handle(UpdateTodoItemDetailCommand request, CancellationToken cancellationToken)
     {
-        var entity = await _context.TodoItems
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var entity = await dbContext.Repository<TodoItem>()
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
         Guard.Against.NotFound(request.Id, entity);
@@ -34,6 +33,6 @@ public class UpdateTodoItemDetailCommandHandler : IRequestHandler<UpdateTodoItem
         entity.Priority = request.Priority;
         entity.Note = request.Note;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

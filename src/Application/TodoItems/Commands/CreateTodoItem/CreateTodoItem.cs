@@ -11,14 +11,10 @@ public record CreateTodoItemCommand : IRequest<int>
     public string? Title { get; init; }
 }
 
-public class CreateTodoItemCommandHandler : IRequestHandler<CreateTodoItemCommand, int>
+public class CreateTodoItemCommandHandler(IApplicationDbContextFactory dbContextFactory)
+    : IRequestHandler<CreateTodoItemCommand, int>
 {
-    private readonly IApplicationDbContext _context;
-
-    public CreateTodoItemCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IApplicationDbContextFactory _dbContextFactory = dbContextFactory;
 
     public async Task<int> Handle(CreateTodoItemCommand request, CancellationToken cancellationToken)
     {
@@ -31,9 +27,12 @@ public class CreateTodoItemCommandHandler : IRequestHandler<CreateTodoItemComman
 
         entity.AddDomainEvent(new TodoItemCreatedEvent(entity));
 
-        _context.TodoItems.Add(entity);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await dbContext.Repository<TodoItem>()
+            .AddAsync(entity, cancellationToken);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return entity.Id;
     }

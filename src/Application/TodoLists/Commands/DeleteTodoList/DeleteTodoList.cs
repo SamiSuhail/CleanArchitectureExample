@@ -1,28 +1,28 @@
 ﻿using Example.Application.Common.Interfaces;
+using Example.Domain.Entities;
 
 namespace Example.Application.TodoLists.Commands.DeleteTodoList;
 
 public record DeleteTodoListCommand(int Id) : IRequest;
 
-public class DeleteTodoListCommandHandler : IRequestHandler<DeleteTodoListCommand>
+public class DeleteTodoListCommandHandler(IApplicationDbContextFactory dbContextFactory)
+    : IRequestHandler<DeleteTodoListCommand>
 {
-    private readonly IApplicationDbContext _context;
-
-    public DeleteTodoListCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IApplicationDbContextFactory _dbContextFactory = dbContextFactory;
 
     public async Task Handle(DeleteTodoListCommand request, CancellationToken cancellationToken)
     {
-        var entity = await _context.TodoLists
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var entity = await dbContext.Repository<TodoList>()
+            .Set()
             .Where(l => l.Id == request.Id)
             .SingleOrDefaultAsync(cancellationToken);
 
         Guard.Against.NotFound(request.Id, entity);
 
-        _context.TodoLists.Remove(entity);
+        dbContext.Repository<TodoList>().Delete(entity);
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

@@ -1,7 +1,11 @@
-﻿namespace Example.Domain.Entities;
+﻿using Example.Domain.Entities.Common;
 
-public class TodoItem : BaseAuditableEntity
+namespace Example.Domain.Entities;
+
+public class TodoItem : BaseAuditableEntity, IIntIdentifiableEntity
 {
+    public int Id { get; set; }
+
     public int ListId { get; set; }
 
     public string? Title { get; set; }

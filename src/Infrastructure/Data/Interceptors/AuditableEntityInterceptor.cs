@@ -1,23 +1,17 @@
 ﻿using Example.Application.Common.Interfaces;
-using Example.Domain.Common;
+using Example.Domain.Entities.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Example.Infrastructure.Data.Interceptors;
 
-public class AuditableEntityInterceptor : SaveChangesInterceptor
+public class AuditableEntityInterceptor(
+    IUser user,
+    TimeProvider dateTime) : SaveChangesInterceptor
 {
-    private readonly IUser _user;
-    private readonly TimeProvider _dateTime;
-
-    public AuditableEntityInterceptor(
-        IUser user,
-        TimeProvider dateTime)
-    {
-        _user = user;
-        _dateTime = dateTime;
-    }
+    private readonly IUser _user = user;
+    private readonly TimeProvider _dateTime = dateTime;
 
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
@@ -37,18 +31,21 @@ public class AuditableEntityInterceptor : SaveChangesInterceptor
     {
         if (context == null) return;
 
-        foreach (var entry in context.ChangeTracker.Entries<BaseAuditableEntity>())
+        foreach (var entry in context.ChangeTracker.Entries<BaseCreatableEntity>())
         {
             if (entry.State == EntityState.Added)
             {
                 entry.Entity.CreatedBy = _user.Id;
-                entry.Entity.Created = _dateTime.GetUtcNow();
+                entry.Entity.CreatedOn = _dateTime.GetUtcNow().DateTime;
             } 
 
-            if (entry.State == EntityState.Added || entry.State == EntityState.Modified || entry.HasChangedOwnedEntities())
+            if ((entry.State == EntityState.Added
+                || entry.State == EntityState.Modified
+                || entry.HasChangedOwnedEntities())
+                && entry.Entity is BaseAuditableEntity entity)
             {
-                entry.Entity.LastModifiedBy = _user.Id;
-                entry.Entity.LastModified = _dateTime.GetUtcNow();
+                entity.LastModifiedBy = _user.Id;
+                entity.LastModifiedOn = _dateTime.GetUtcNow().DateTime;
             }
         }
     }

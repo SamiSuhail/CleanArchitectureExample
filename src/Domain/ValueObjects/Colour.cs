@@ -1,6 +1,6 @@
 ﻿namespace Example.Domain.ValueObjects;
 
-public class Colour : ValueObject
+public class Colour : BaseValueObject
 {
     static Colour()
     {

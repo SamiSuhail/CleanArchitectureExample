@@ -1,4 +1,5 @@
 ﻿using Example.Application.Common.Interfaces;
+using Example.Domain.Entities;
 
 namespace Example.Application.TodoLists.Commands.UpdateTodoList;
 
@@ -9,25 +10,23 @@ public record UpdateTodoListCommand : IRequest
     public string? Title { get; init; }
 }
 
-public class UpdateTodoListCommandHandler : IRequestHandler<UpdateTodoListCommand>
+public class UpdateTodoListCommandHandler(IApplicationDbContextFactory dbContextFactory)
+    : IRequestHandler<UpdateTodoListCommand>
 {
-    private readonly IApplicationDbContext _context;
-
-    public UpdateTodoListCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IApplicationDbContextFactory _dbContextFactory = dbContextFactory;
 
     public async Task Handle(UpdateTodoListCommand request, CancellationToken cancellationToken)
     {
-        var entity = await _context.TodoLists
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var entity = await dbContext.Repository<TodoList>()
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
         Guard.Against.NotFound(request.Id, entity);
 
         entity.Title = request.Title;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
     }
 }

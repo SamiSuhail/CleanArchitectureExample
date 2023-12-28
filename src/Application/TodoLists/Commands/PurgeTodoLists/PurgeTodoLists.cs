@@ -1,6 +1,7 @@
 ﻿using Example.Application.Common.Interfaces;
 using Example.Application.Common.Security;
 using Example.Domain.Constants;
+using Example.Domain.Entities;
 
 namespace Example.Application.TodoLists.Commands.PurgeTodoLists;
 
@@ -8,19 +9,17 @@ namespace Example.Application.TodoLists.Commands.PurgeTodoLists;
 [Authorize(Policy = Policies.CanPurge)]
 public record PurgeTodoListsCommand : IRequest;
 
-public class PurgeTodoListsCommandHandler : IRequestHandler<PurgeTodoListsCommand>
+public class PurgeTodoListsCommandHandler(IApplicationDbContextFactory dbContextFactory)
+    : IRequestHandler<PurgeTodoListsCommand>
 {
-    private readonly IApplicationDbContext _context;
-
-    public PurgeTodoListsCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IApplicationDbContextFactory _dbContextFactory = dbContextFactory;
 
     public async Task Handle(PurgeTodoListsCommand request, CancellationToken cancellationToken)
     {
-        _context.TodoLists.RemoveRange(_context.TodoLists);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        await _context.SaveChangesAsync(cancellationToken);
+        dbContext.Repository<TodoList>().DeleteRange(dbContext.Repository<TodoList>().Set());
+
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

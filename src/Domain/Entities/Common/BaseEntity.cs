@@ -1,14 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Example.Domain.Common;
+namespace Example.Domain.Entities.Common;
 
-public abstract class BaseEntity
+public interface IEntity
 {
-    // This can easily be modified to be BaseEntity<T> and public T Id to support different key types.
-    // Using non-generic integer types for simplicity
-    public int Id { get; set; }
+    IReadOnlyCollection<BaseEvent> DomainEvents { get; }
+    void AddDomainEvent(BaseEvent domainEvent);
+    void RemoveDomainEvent(BaseEvent domainEvent);
+    void ClearDomainEvents();
+}
 
-    private readonly List<BaseEvent> _domainEvents = new();
+public abstract class BaseEntity : IEntity
+{
+    private readonly List<BaseEvent> _domainEvents = [];
 
     [NotMapped]
     public IReadOnlyCollection<BaseEvent> DomainEvents => _domainEvents.AsReadOnly();

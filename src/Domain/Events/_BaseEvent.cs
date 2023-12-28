@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Example.Domain.Common;
+namespace Example.Domain.Events;
 
 public abstract class BaseEvent : INotification
 {

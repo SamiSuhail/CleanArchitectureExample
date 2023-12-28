@@ -9,7 +9,14 @@ public static class DependencyInjection
     {
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        var validatorsToRegister = AssemblyScanner.FindValidatorsInAssembly(Assembly.GetExecutingAssembly())
+            .Where(pair => !ValidatorsHelper.IgnoredValidators.Contains(pair.ValidatorType))
+            .Select(pair => ServiceDescriptor.Transient(pair.InterfaceType, pair.ValidatorType));
+
+        foreach (var validator in validatorsToRegister)
+        {
+            services.Add(validator);
+        };
 
         services.AddMediatR(cfg => {
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());

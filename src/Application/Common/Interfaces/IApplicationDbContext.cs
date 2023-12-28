@@ -1,12 +1,33 @@
-﻿using Example.Domain.Entities;
+﻿using Example.Domain.Entities.Common;
 
 namespace Example.Application.Common.Interfaces;
 
-public interface IApplicationDbContext
+public interface IApplicationDbContext : IAsyncDisposable
 {
-    DbSet<TodoList> TodoLists { get; }
+    /// <inheritdoc cref="DbSet{TEntity}" />
+    IRepository<TEntity> Repository<TEntity>()
+        where TEntity : class;
 
-    DbSet<TodoItem> TodoItems { get; }
+    /// <seealso cref="Repository{TEntity}"/>
+    /// <returns>The <see cref="DbSet{TEntity}"/> as a <see cref="IDeletableRepository{TEntity}"/></returns>
+    IDeletableRepository<TEntity> DeletableRepository<TEntity>()
+        where TEntity : class, IDeletableEntity;
 
+    /// <inheritdoc cref="DbContext.SaveChanges()" />
+    int SaveChanges();
+
+    /// <inheritdoc cref="DbContext.SaveChanges(bool)" />
+    int SaveChanges(bool acceptAllChangesOnSuccess);
+
+    /// <inheritdoc cref="DbContext.SaveChangesAsync(CancellationToken)" />
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+
+    /// <inheritdoc cref="DbContext.SaveChangesAsync(bool, CancellationToken)" />
+    Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken);
+}
+
+public interface IApplicationDbContextFactory
+{
+    IApplicationDbContext CreateDbContext();
+    Task<IApplicationDbContext> CreateDbContextAsync(CancellationToken cancellationToken);
 }

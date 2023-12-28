@@ -30,8 +30,8 @@ namespace Example.Infrastructure.Data.Migrations
 
                 SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                b.Property<DateTimeOffset>("Created")
-                    .HasColumnType("datetimeoffset");
+                b.Property<DateTime>("CreatedOn")
+                    .HasColumnType("datetime");
 
                 b.Property<string>("CreatedBy")
                     .HasColumnType("nvarchar(max)");
@@ -39,8 +39,8 @@ namespace Example.Infrastructure.Data.Migrations
                 b.Property<bool>("Done")
                     .HasColumnType("bit");
 
-                b.Property<DateTimeOffset>("LastModified")
-                    .HasColumnType("datetimeoffset");
+                b.Property<DateTime>("LastModified")
+                    .HasColumnType("datetime");
 
                 b.Property<string>("LastModifiedBy")
                     .HasColumnType("nvarchar(max)");
@@ -77,14 +77,14 @@ namespace Example.Infrastructure.Data.Migrations
 
                 SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                b.Property<DateTimeOffset>("Created")
-                    .HasColumnType("datetimeoffset");
+                b.Property<DateTime>("CreatedOn")
+                    .HasColumnType("datetime");
 
                 b.Property<string>("CreatedBy")
                     .HasColumnType("nvarchar(max)");
 
-                b.Property<DateTimeOffset>("LastModified")
-                    .HasColumnType("datetimeoffset");
+                b.Property<DateTime>("LastModified")
+                    .HasColumnType("datetime");
 
                 b.Property<string>("LastModifiedBy")
                     .HasColumnType("nvarchar(max)");
@@ -121,8 +121,8 @@ namespace Example.Infrastructure.Data.Migrations
                 b.Property<bool>("LockoutEnabled")
                     .HasColumnType("bit");
 
-                b.Property<DateTimeOffset?>("LockoutEnd")
-                    .HasColumnType("datetimeoffset");
+                b.Property<DateTime?>("LockoutEnd")
+                    .HasColumnType("datetime");
 
                 b.Property<string>("NormalizedEmail")
                     .HasMaxLength(256)

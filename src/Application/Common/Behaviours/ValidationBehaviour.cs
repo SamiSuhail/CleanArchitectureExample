@@ -14,16 +14,29 @@ public class ValidationBehaviour<TRequest, TResponse> : IPipelineBehavior<TReque
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        if (_validators.Any())
+        var validatorsToApply = _validators.Where(v =>
+        {
+            foreach (var ignoredValidatorType in ValidatorsHelper.IgnoredValidators)
+            {
+                if (v.GetType() == ignoredValidatorType)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        if (validatorsToApply.Any())
         {
             var context = new ValidationContext<TRequest>(request);
 
             var validationResults = await Task.WhenAll(
-                _validators.Select(v =>
+                validatorsToApply.Select(v =>
                     v.ValidateAsync(context, cancellationToken)));
 
             var failures = validationResults
-                .Where(r => r.Errors.Any())
+                .Where(r => r.Errors.Count != 0)
                 .SelectMany(r => r.Errors)
                 .ToList();
 
@@ -32,4 +45,9 @@ public class ValidationBehaviour<TRequest, TResponse> : IPipelineBehavior<TReque
         }
         return await next();
     }
+}
+
+public static class ValidatorsHelper
+{
+    public static readonly HashSet<Type> IgnoredValidators = [];
 }

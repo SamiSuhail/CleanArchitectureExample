@@ -8,6 +8,7 @@ public class TodoItemConfiguration : IEntityTypeConfiguration<TodoItem>
 {
     public void Configure(EntityTypeBuilder<TodoItem> builder)
     {
+        builder.ToTable($"{nameof(TodoItem)}s");
         builder.Property(t => t.Title)
             .HasMaxLength(200)
             .IsRequired();

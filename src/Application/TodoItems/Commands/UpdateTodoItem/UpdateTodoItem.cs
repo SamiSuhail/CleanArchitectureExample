@@ -1,4 +1,5 @@
 ﻿using Example.Application.Common.Interfaces;
+using Example.Domain.Entities;
 
 namespace Example.Application.TodoItems.Commands.UpdateTodoItem;
 
@@ -11,18 +12,16 @@ public record UpdateTodoItemCommand : IRequest
     public bool Done { get; init; }
 }
 
-public class UpdateTodoItemCommandHandler : IRequestHandler<UpdateTodoItemCommand>
+public class UpdateTodoItemCommandHandler(IApplicationDbContextFactory dbContextFactory)
+    : IRequestHandler<UpdateTodoItemCommand>
 {
-    private readonly IApplicationDbContext _context;
-
-    public UpdateTodoItemCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IApplicationDbContextFactory _dbContextFactory = dbContextFactory;
 
     public async Task Handle(UpdateTodoItemCommand request, CancellationToken cancellationToken)
     {
-        var entity = await _context.TodoItems
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var entity = await dbContext.Repository<TodoItem>()
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
         Guard.Against.NotFound(request.Id, entity);
@@ -30,6 +29,6 @@ public class UpdateTodoItemCommandHandler : IRequestHandler<UpdateTodoItemComman
         entity.Title = request.Title;
         entity.Done = request.Done;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

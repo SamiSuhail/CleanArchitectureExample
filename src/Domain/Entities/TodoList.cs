@@ -1,7 +1,11 @@
-﻿namespace Example.Domain.Entities;
+﻿using Example.Domain.Entities.Common;
 
-public class TodoList : BaseAuditableEntity
+namespace Example.Domain.Entities;
+
+public class TodoList : BaseAuditableEntity, IIntIdentifiableEntity
 {
+    public int Id { get; set; }
+
     public string? Title { get; set; }
 
     public Colour Colour { get; set; } = Colour.White;
