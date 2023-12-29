@@ -19,12 +19,12 @@ public class UpdateTodoListCommandHandler(IApplicationDbContextFactory dbContext
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        var entity = await dbContext.Repository<TodoList>()
+        var todoList = await dbContext.Repository<TodoList>()
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
-        Guard.Against.NotFound(request.Id, entity);
+        Guard.Against.NotFound(nameof(todoList), todoList, request.Id);
 
-        entity.Title = request.Title;
+        todoList!.Title = request.Title;
 
         await dbContext.SaveChangesAsync(cancellationToken);
 

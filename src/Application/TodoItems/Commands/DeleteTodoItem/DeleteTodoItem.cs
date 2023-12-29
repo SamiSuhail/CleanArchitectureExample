@@ -15,14 +15,14 @@ public class DeleteTodoItemCommandHandler(IApplicationDbContextFactory dbContext
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        var entity = await dbContext.Repository<TodoItem>()
+        var todoItem = await dbContext.Repository<TodoItem>()
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
-        Guard.Against.NotFound(request.Id, entity);
+        Guard.Against.NotFound(nameof(todoItem), todoItem, request.Id);
 
-        dbContext.Repository<TodoItem>().Delete(entity);
+        dbContext.Repository<TodoItem>().Delete(todoItem!);
 
-        entity.AddDomainEvent(new TodoItemDeletedEvent(entity));
+        todoItem!.AddDomainEvent(new TodoItemDeletedEvent(todoItem));
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }

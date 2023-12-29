@@ -1,5 +1,8 @@
 ﻿using System.Data.Common;
+using Example.Infrastructure;
 using Example.Infrastructure.Data;
+using Example.Shared.ErrorHandling;
+using Example.Shared.ErrorHandling.Clauses;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,11 +23,11 @@ public class SqlServerTestDatabase : ITestDatabase
             .AddEnvironmentVariables()
             .Build();
 
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var connectionString = configuration.GetConnectionString(ConnectionStrings.DefaultConnection);
 
-        Guard.Against.Null(connectionString);
+        Guard.Against.NotFound(nameof(connectionString), connectionString, ConnectionStrings.DefaultConnection);
 
-        _connectionString = connectionString;
+        _connectionString = connectionString!;
     }
 
     public async Task InitialiseAsync()

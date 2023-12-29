@@ -1,3 +1,4 @@
+using Example.Infrastructure;
 using Example.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);

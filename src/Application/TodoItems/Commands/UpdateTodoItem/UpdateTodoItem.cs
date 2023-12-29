@@ -21,13 +21,13 @@ public class UpdateTodoItemCommandHandler(IApplicationDbContextFactory dbContext
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        var entity = await dbContext.Repository<TodoItem>()
+        var todoItem = await dbContext.Repository<TodoItem>()
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
-        Guard.Against.NotFound(request.Id, entity);
+        Guard.Against.NotFound(nameof(todoItem), todoItem, request.Id);
 
-        entity.Title = request.Title;
-        entity.Done = request.Done;
+        todoItem!.Title = request.Title;
+        todoItem.Done = request.Done;
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }

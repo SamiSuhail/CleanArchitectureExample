@@ -14,14 +14,14 @@ public class DeleteTodoListCommandHandler(IApplicationDbContextFactory dbContext
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        var entity = await dbContext.Repository<TodoList>()
+        var todoList = await dbContext.Repository<TodoList>()
             .Set()
             .Where(l => l.Id == request.Id)
             .SingleOrDefaultAsync(cancellationToken);
 
-        Guard.Against.NotFound(request.Id, entity);
+        Guard.Against.NotFound(nameof(todoList), todoList, request.Id);
 
-        dbContext.Repository<TodoList>().Delete(entity);
+        dbContext.Repository<TodoList>().Delete(todoList!);
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }

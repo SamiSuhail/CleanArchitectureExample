@@ -4,6 +4,7 @@ using Example.Application.TodoItems.Commands.UpdateTodoItemDetail;
 using Example.Application.TodoLists.Commands.CreateTodoList;
 using Example.Domain.Entities;
 using Example.Domain.Enums;
+using Example.Shared.ErrorHandling.Clauses;
 
 namespace Example.Application.FunctionalTests.TodoItems.Commands;
 

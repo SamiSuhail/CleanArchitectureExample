@@ -3,30 +3,27 @@ using Example.Domain.Constants;
 using Example.Infrastructure.Data;
 using Example.Infrastructure.Data.Interceptors;
 using Example.Infrastructure.Identity;
+using Example.Shared.ErrorHandling;
+using Example.Shared.ErrorHandling.Clauses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Example.Infrastructure;
 
 public static class DependencyInjection
 {
-    private record DatabaseOptions(
-        int MaxRetryCount,
-        int CommandTimeout,
-        bool EnableDetailedErrors,
-        bool EnableSensitiveDataLogging);
-
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var connectionString = configuration.GetConnectionString(ConnectionStrings.DefaultConnection);
 
         var dbOptions = configuration
             .GetRequiredSection(nameof(DatabaseOptions))
             .Get<DatabaseOptions>()!;
 
-        Guard.Against.Null(connectionString, message: "Connection string 'DefaultConnection' not found.");
+        Guard.Against.NotFound(nameof(connectionString), connectionString, ConnectionStrings.DefaultConnection);
 
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
@@ -75,4 +72,15 @@ public static class DependencyInjection
 
         return services;
     }
+
+    private record DatabaseOptions(
+        int MaxRetryCount,
+        int CommandTimeout,
+        bool EnableDetailedErrors,
+        bool EnableSensitiveDataLogging);
+}
+
+public static class ConnectionStrings
+{
+    public const string DefaultConnection = nameof(DefaultConnection);
 }

@@ -24,14 +24,14 @@ public class UpdateTodoItemDetailCommandHandler(IApplicationDbContextFactory dbC
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        var entity = await dbContext.Repository<TodoItem>()
+        var todoItem = await dbContext.Repository<TodoItem>()
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
-        Guard.Against.NotFound(request.Id, entity);
+        Guard.Against.NotFound(nameof(todoItem), todoItem, request.Id);
 
-        entity.ListId = request.ListId;
-        entity.Priority = request.Priority;
-        entity.Note = request.Note;
+        todoItem!.ListId = request.ListId;
+        todoItem.Priority = request.Priority;
+        todoItem.Note = request.Note;
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }

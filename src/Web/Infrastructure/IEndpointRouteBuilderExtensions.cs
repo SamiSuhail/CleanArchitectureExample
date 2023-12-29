@@ -1,4 +1,6 @@
-﻿namespace Example.Web.Infrastructure;
+﻿using Example.Shared.ErrorHandling;
+
+namespace Example.Web.Infrastructure;
 
 public static class IEndpointRouteBuilderExtensions
 {
