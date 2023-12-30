@@ -25,15 +25,18 @@ public static class NotFoundExtensions
 public class NotFoundException
     : ApplicationException
 {
-    public const string MessageTemplate = "{0} with key {1} was not found.";
     public new const string DefaultCode = "NOT_FOUND";
+    private const string MessageTemplateInternal = "{0} with key {1} was not found.";
 
     private NotFoundException(string entityName, string id)
-        : base(string.Format(MessageTemplate, entityName, id), DefaultCode)
+        : base(string.Format(MessageTemplateInternal, entityName, id), DefaultCode)
     {
         EntityName = entityName;
         Id = id;
     }
+
+    public static string MessageTemplate { get; } = MessageTemplateInternal.Replace("0", nameof(EntityName))
+                                                            .Replace("1", nameof(Id));
 
     public string EntityName { get; }
     public string Id { get; }
